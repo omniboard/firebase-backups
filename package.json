@@ -1,0 +1,28 @@
+{
+  "name": "firebase-backups",
+  "version": "1.0.0",
+  "description": "Backup/restore utility for firebase databases",
+  "main": "run.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://tbowler@github.com/tbowler/firebase-backups.git"
+  },
+  "author": "Tyler Bowler",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tbowler/firebase-backups/issues"
+  },
+  "homepage": "https://github.com/tbowler/firebase-backups#readme",
+  "engines": {
+    "node": "6.9.4"
+  },
+  "dependencies": {
+    "async": "^2.1.4",
+    "aws-sdk": "^2.7.28",
+    "deferred": "^0.7.5",
+    "path": "^0.12.7"
+  }
+}
