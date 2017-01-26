@@ -13,6 +13,9 @@ function Backup(){
   this.validate();
   this.perform();
 }
+Backup.prototype.convertToMB = function(bytes){
+  return parseFloat(bytes / 1024 / 1024);
+}
 Backup.prototype.getParams = function(){
   this.params = {};
   for( var i=2;i<process.argv.length; i++){
@@ -29,17 +32,34 @@ Backup.prototype.perform = function(){
     console.log(`starting restore of ${this.params.name}`);
     this.restoreDB();
   }
+  if(this.params.list === 'true'){
+    console.log(`starting list ${this.params.dbHostName}`);
+    this.listBackups();
+  }
 };
 Backup.prototype.validate = function(){  
-  if( typeof this.params !== 'undefined' && 
-    (typeof this.params.dbHostName === 'undefined' || 
+  if( typeof this.params !== 'undefined' ) {
+    if(typeof this.params.list !== 'undefined'){
+      return true;
+    } else if (typeof this.params.dbHostName === 'undefined' || 
       typeof this.params.name === 'undefined' || 
       typeof this.params.dbToken === 'undefined' || 
-      typeof this.params.folderLocation === 'undefined')) {
-    throw new Error("Improperly configured backup!");
+      typeof this.params.folderLocation === 'undefined') {
+      throw new Error("Improperly configured backup!");
+    }
   } else {
     return true;
   }
+};
+Backup.prototype.listBackups = function(){
+  var self = this;
+  AWS.listS3(this.params.dbHostName).then(
+    function(files){
+      for(var file in files){
+        console.log( files[file].Key, self.convertToMB(files[file].Size).toFixed(2)+' MB' );
+      }
+    }
+  );
 };
 Backup.prototype.makeFolderFromStructure = function(folderPath){
   var makeStructurePromise = deferred();

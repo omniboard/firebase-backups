@@ -68,3 +68,23 @@ exports.uploadS3 = function (filepath, bucketLocation) {
 
   return def.promise;
 }
+
+exports.listS3 = function(bucket) {
+  var listPromise = deferred();
+  var AWSData = getAwsParams();
+  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET},accessKeyId: AWSData.FBR_ACCESS_KEY_ID, secretAccessKey: AWSData.FBR_SECRET_ACCESS_KEY});
+  var params = {
+    Bucket: AWSData.FBR_S3_BUCKET,
+    Delimiter: ',',
+    Prefix: bucket
+  };
+ 
+  s3.listObjects(params, function (error, response) {
+    if(error) {
+      listPromise.resolve(error);
+    } else {
+      listPromise.resolve(response.Contents);
+    }
+  });
+  return listPromise.promise;
+};

@@ -38,3 +38,6 @@ To enable S3 you must first setup your S3 account with permissions and a bucket 
 
 ### Command Parameter
 - `-saveS3=true`
+
+### List Backups On S3 
+- `-list=true -dbHostname=<NAME>`
