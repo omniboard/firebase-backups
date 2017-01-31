@@ -186,6 +186,11 @@ Backup.prototype.restoreDBfromS3 = function(){
               var URL = `'https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}'`;
               console.log(`curl -X PUT ${URL} --progress-bar --upload-file ${decompressedFileLocation}`);
           
+              if( typeof self.params.saveLocal === 'undefined' || self.params.saveLocal !== 'true'){
+                fs.unlink(decompressedFileLocation);
+                fs.unlink(`${decompressedFileLocation}.gz`);
+              }
+              
               /* TODO: GET THIS WORKING 
               child_process.execFile('curl', ['-X', 'PUT', URL, '--progress-bar', '--upload-file', decompressedFileLocation], function(error, stdout, stderr){
                 console.log( 'error ', error );
@@ -228,36 +233,24 @@ Backup.prototype.decompress = function(filePath){
   var outputPath = filePath.split('.gz')[0];
   var out2 = fs.createWriteStream(outputPath, {false:'w'});
   var inflater = inp2.pipe(zlib.createGunzip()).pipe(out2); /* Uncompress the .gz file */
-
   var deflatedFilePath = filePath.replace(/\.gz/, '');
   var buffer = [];
-  var gunzip = zlib.createGunzip();            
+  var gunzip = zlib.createGunzip();
   inp2.pipe(gunzip);
   gunzip.on('data', function(data) {
-      // decompression chunk ready, add it to the buffer
       buffer.push(data.toString())
   }).on("end", function() {
-      // response and decompression complete, join the buffer and return
-      fs.writeFile(deflatedFilePath, buffer.join(""), function(err) {
-          if(err) {
-              return console.log(err);
-          }
-          console.log("The file was saved locally");
-          decompressPromise.resolve(deflatedFilePath);
-      }); 
-      
+    fs.writeFile(deflatedFilePath, buffer.join(""), function(err) {
+        if(err) {
+            return console.log(err);
+        }
+        console.log("The file was saved locally");
+        decompressPromise.resolve(deflatedFilePath);
+    }); 
   }).on("error", function(e) {
     console.log( e );
     decompressPromise.reject( e );
   })    
-
-//inflater.on('finish', function() {
-    //logger.debug( self.PID , ' extracted successfully!');
-    // delete compressed file
-    //inp2.pipe(zlib.createGunzip()).pipe(out2); /* Uncompress the .gz file */
-    //self.fs.unlink(self.Data.FileName);
-    //var deflatedFilePath = path.join(__dirname, filePath.replace(/\.gz/, ''));
-//});  
   
   return decompressPromise.promise;
 };
