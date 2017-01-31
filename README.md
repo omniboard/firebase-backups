@@ -41,3 +41,6 @@ To enable S3 you must first setup your S3 account with permissions and a bucket 
 
 ### List Backups On S3 
 - `-list=true -dbHostname=<NAME>`
+
+### Restore from S3
+- `-restore=true -dbHostName=reynolds-43c54 -dbToken=vWBUPl7Yx5cSEXqtmWkzpTP3gbzZnRK13Ax4QXio -restoreS3=true`

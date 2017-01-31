@@ -31,6 +31,34 @@ var getAwsParams = function(){
   return AWS;
 };
 
+exports.getFromAWS = function(bucketLocation, fullPath) {  
+  var fileName = "RESTORE_"+bucketLocation.split('/')[1];
+  var fullPathToFileName = `${fullPath}${fileName}`;
+  var def = deferred();
+  var AWSData = getAwsParams();
+  var getParams = {
+    Bucket: AWSData.FBR_S3_BUCKET,
+    Key: bucketLocation
+  };
+  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET},accessKeyId: AWSData.FBR_ACCESS_KEY_ID, secretAccessKey: AWSData.FBR_SECRET_ACCESS_KEY});
+  s3.getObject(getParams, function(err, data) {
+    if (err) {
+      console.error('get object error: ', err.message);
+      def.resolve();
+    } else if (data == null || data.Body == null) {
+      console.error('... missing file innerDefnformation');
+    } else {
+      // download compressed file
+      var fd = fs.openSync(fullPathToFileName, 'w');
+      fs.writeSync(fd, data.Body, 0, data.Body.length, 0);
+      fs.closeSync(fd);      
+      def.resolve(fullPathToFileName);
+    }
+  });
+
+  return def.promise;
+},
+
 exports.uploadS3 = function (filepath, bucketLocation) {
   var def = deferred();
   var s3KeyName = bucketLocation+"/"+filepath.split('/').pop();

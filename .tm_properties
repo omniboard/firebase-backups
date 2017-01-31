@@ -1,0 +1,5 @@
+tabSize = 2
+softTabs = true
+excludeDirectories = "{$excludeDirectories,tmp,log,node_modules,bower_components}"
+includeFiles = "{$includeFiles,.rspec,.powder,.powenv,.gitignore,.bowerrc,.env*,.eslintrc.yml}"
+TM_ENSURE_TRAILING_NEWLINE_ON_SAVE = true
