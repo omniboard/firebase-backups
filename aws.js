@@ -1,7 +1,7 @@
-const logger = require('./logger');
-const fs = require('fs');
-const AWS = require('aws-sdk');
-const deferred = require('deferred');
+const logger = require("./logger");
+const fs = require("fs");
+const AWS = require("aws-sdk");
+const deferred = require("deferred");
 
 var getAwsParams = function(){  
   var AWS = {};
@@ -21,7 +21,7 @@ var getAwsParams = function(){
 };
 
 exports.getFromAWS = function(bucketLocation, fullPath) {  
-  var fileName = "RESTORE_"+bucketLocation.split('/')[1];
+  var fileName = "RESTORE_"+bucketLocation.split("/")[1];
   var fullPathToFileName = `${fullPath}${fileName}`;
   var def = deferred();
   var AWSData = getAwsParams();
@@ -32,13 +32,13 @@ exports.getFromAWS = function(bucketLocation, fullPath) {
   var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
   s3.getObject(getParams, function(err, data) {
     if (err) {
-      logger.error('get object error: ', err.message);
+      logger.error("get object error: ", err.message);
       def.resolve();
     } else if (data == null || data.Body == null) {
-      logger.error('... missing file innerDefnformation');
+      logger.error("... missing file innerDefnformation");
     } else {
       // download compressed file
-      var fd = fs.openSync(fullPathToFileName, 'w');
+      var fd = fs.openSync(fullPathToFileName, "w");
       fs.writeSync(fd, data.Body, 0, data.Body.length, 0);
       fs.closeSync(fd);      
       def.resolve(fullPathToFileName);
@@ -46,17 +46,17 @@ exports.getFromAWS = function(bucketLocation, fullPath) {
   });
 
   return def.promise;
-},
+};
 
 exports.uploadS3 = function (filepath, bucketLocation) {
   var def = deferred();
-  var s3KeyName = bucketLocation+"/"+filepath.split('/').pop();
+  var s3KeyName = bucketLocation+"/"+filepath.split("/").pop();
   var AWSData = getAwsParams();
   var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
   AWS.config.region = AWSData.FBR_REGION;
   fs.readFile(filepath, function (err, filedata) {
     if(err) {
-      def.reject('unable to read file to upload to s3');
+      def.reject("unable to read file to upload to s3");
     } else {
       var data = {
         Bucket: AWSData.FBR_S3_BUCKET,
@@ -84,7 +84,7 @@ exports.uploadS3 = function (filepath, bucketLocation) {
   });
 
   return def.promise;
-}
+};
 
 exports.listS3 = function(bucket) {
   var listPromise = deferred();
@@ -92,7 +92,7 @@ exports.listS3 = function(bucket) {
   var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
   var params = {
     Bucket: AWSData.FBR_S3_BUCKET,
-    Delimiter: ',',
+    Delimiter: ",",
     Prefix: bucket
   };
  

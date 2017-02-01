@@ -1,13 +1,13 @@
-const logger = require('./logger');
-const zlib = require('zlib');
-const deferred = require('deferred');
-const path = require('path');
-const async = require('async');
-const fs = require('fs');
+const logger = require("./logger");
+const zlib = require("zlib");
+const deferred = require("deferred");
+const path = require("path");
+const async = require("async");
+const fs = require("fs");
 const gzip = zlib.createGzip();
-const child_process = require('child_process');
-const execFile = require('child_process').execFile;
-const AWS = require('./aws');
+const childProcess = require("child_process");
+const execFile = require("child_process").execFile;
+const AWS = require("./aws");
 
 function Backup(){
   this.getParams();
@@ -16,41 +16,41 @@ function Backup(){
 }
 Backup.prototype.convertToMB = function(bytes){
   return parseFloat(bytes / 1024 / 1024);
-}
+};
 Backup.prototype.getParams = function(){
   this.params = {};
   for( var i=2;i<process.argv.length; i++){
-    var param = process.argv[i].split('=');
+    var param = process.argv[i].split("=");
     this.params[ param[0].replace(/-/,"") ] = param[1];
   }
 }
 Backup.prototype.perform = function(){
-  if(this.params.restore === 'false'){
+  if(this.params.restore === "false"){
     logger.info(`Starting backup of ${this.params.name}`);
     this.backupDB();
   }
-  if(this.params.restore === 'true'){
+  if(this.params.restore === "true"){
     logger.info(`Starting restore of ${this.params.dbHostName}`);
-    if(typeof this.params.restoreS3 === 'undefined'){
+    if(typeof this.params.restoreS3 === "undefined"){
       this.restoreDB();
-    } else if(typeof this.params.restoreS3 !== 'undefined'){
+    } else if(typeof this.params.restoreS3 !== "undefined"){
       this.restoreDBfromS3();
     }
   }
-  if(this.params.list === 'true'){
+  if(this.params.list === "true"){
     this.listBackups();
   }
 };
 Backup.prototype.validate = function(){  
-  if( typeof this.params !== 'undefined' ) {
-    if(typeof this.params.list !== 'undefined'){
+  if( typeof this.params !== "undefined" ) {
+    if(typeof this.params.list !== "undefined"){
       return true;
-    } else if(typeof this.params.restoreS3 !== 'undefined'){
+    } else if(typeof this.params.restoreS3 !== "undefined"){
       return true;
-    } else if (typeof this.params.dbHostName === 'undefined' || 
-      typeof this.params.name === 'undefined' || 
-      typeof this.params.dbToken === 'undefined' || 
-      typeof this.params.tempDirectory === 'undefined') {
+    } else if (typeof this.params.dbHostName === "undefined" || 
+      typeof this.params.name === "undefined" || 
+      typeof this.params.dbToken === "undefined" || 
+      typeof this.params.tempDirectory === "undefined") {
       throw new Error("Improperly configured backup!");
     }
   } else {
@@ -62,13 +62,13 @@ Backup.prototype.listBackups = function(){
   AWS.listS3(this.params.dbHostName).then(
     function(files){
       for(var file in files){
-        logger.info( files[file].Key, self.convertToMB(files[file].Size).toFixed(2)+' MB' );
+        logger.info( files[file].Key, self.convertToMB(files[file].Size).toFixed(2)+" MB" );
       }
     }
   );
 };
 Backup.prototype.isFilename = function(name) {
-  if( name.indexOf('.') > -1){
+  if( name.indexOf(".") > -1){
     return true;
   } else {
     return false;
@@ -80,7 +80,7 @@ Backup.prototype.makeFolderFromStructure = function(folderPath){
   var folderQueue = async.queue( function (folderPath,pathComplete){
     var parentDir = folderPath
     if (!fs.existsSync(parentDir)){
-    	fs.mkdirSync(parentDir);
+      fs.mkdirSync(parentDir);
     }
     finalPath = parentDir; 
     pathComplete();
@@ -90,11 +90,11 @@ Backup.prototype.makeFolderFromStructure = function(folderPath){
   };
   folderQueue.pause();
   
-  var folders = folderPath.split('/');
-  var completePath = '';
+  var folders = folderPath.split("/");
+  var completePath = "";
   for(var folder in folders){
     if (!this.isFilename(folders[folder])) {
-      completePath = completePath + folders[folder] + '/';
+      completePath = completePath + folders[folder] + "/";
       folderQueue.push( completePath );
     }
   }
@@ -107,9 +107,9 @@ Backup.prototype.backupDB = function(){
   this.makeFolderFromStructure(this.params.tempDirectory).then(
     function(filePath){
       var URL = `https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}`;
-      var FILENAME_DATE = new Date().toISOString().split('-').join('').split(':').join('').split('.').join('');
-      var fileName = filePath+FILENAME_DATE+'.json';
-      child_process.execFile('curl', ['-o', fileName, URL], function(error, stdout, stderr){
+      var FILENAME_DATE = new Date().toISOString().split("-").join("").split(":").join("").split(".").join("");
+      var fileName = filePath+FILENAME_DATE+".json";
+      childProcess.execFile("curl", ["-o", fileName, URL], function(error, stdout, stderr){
         if( error ){
           downloadPromise.reject();
         } else {
@@ -125,12 +125,12 @@ Backup.prototype.backupDB = function(){
         }
       });
     }
-  )
+  );
   return downloadPromise.promise;
 };
 Backup.prototype.saveS3 = function(path, filename){
   var savePromise = deferred();
-  if(this.params.saveS3 === 'true') {
+  if(this.params.saveS3 === "true") {
     
     setTimeout(function(){
       AWS.uploadS3(path,filename).then(
@@ -142,7 +142,7 @@ Backup.prototype.saveS3 = function(path, filename){
       );
     },5000); 
   } else {
-    logger.info('skip s3');
+    logger.info("skip s3");
     savePromise.resolve();
   }
   return savePromise.promise;
@@ -154,7 +154,7 @@ Backup.prototype.restoreDB = function(){
       
       setTimeout(function(){
         var URL = `https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}`;
-        child_process.execFile('curl', ['-X', 'PUT', URL, '--upload-file', decompressedFileLocation], function(error, stdout, stderr){
+        childProcess.execFile("curl", ["-X", "PUT", URL, "--upload-file", decompressedFileLocation], function(error, stdout, stderr){
 
           if( error || JSON.parse(stdout).error ){
             if( error === null){
@@ -172,29 +172,29 @@ Backup.prototype.restoreDB = function(){
 };
 Backup.prototype.restoreDBfromS3 = function(){
   var self = this;
-  logger.info('Restore from s3');
+  logger.info("Restore from s3");
   self.makeFolderFromStructure(`restores/${self.params.restoreLocation}`).then(
     function(restoreFilePath){
       AWS.getFromAWS(self.params.restoreLocation, restoreFilePath).then(
         function(decompressedFileLocation){
-          logger.info('File downloaded');
+          logger.info("File downloaded");
           self.decompress(decompressedFileLocation).then(
             function(decompressedFileLocation){
-              logger.info('file decompressed ');
-              logger.info( 'To Restore Run Command:');
-              var URL = `'https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}'`;
+              logger.info("file decompressed ");
+              logger.info( "To Restore Run Command:");
+              var URL = `"https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}"`;
               logger.info(`curl -X PUT ${URL} --progress-bar --upload-file ${decompressedFileLocation}`);
           
-              if( typeof self.params.saveLocal === 'undefined' || self.params.saveLocal !== 'true'){
+              if( typeof self.params.saveLocal === "undefined" || self.params.saveLocal !== "true"){
                 fs.unlink(decompressedFileLocation);
                 fs.unlink(`${decompressedFileLocation}.gz`);
               }
               
               /* TODO: GET THIS WORKING 
-              child_process.execFile('curl', ['-X', 'PUT', URL, '--progress-bar', '--upload-file', decompressedFileLocation], function(error, stdout, stderr){
-                logger.info( 'error ', error );
-                logger.info( 'stdout ', stdout );
-                logger.info( 'stderr ', stderr );
+              childProcess.execFile("curl", ["-X", "PUT", URL, "--progress-bar", "--upload-file", decompressedFileLocation], function(error, stdout, stderr){
+                logger.info( "error ", error );
+                logger.info( "stdout ", stdout );
+                logger.info( "stderr ", stderr );
 
                 if( error || JSON.parse(stdout).error ){
                   if( error === null){
@@ -207,7 +207,7 @@ Backup.prototype.restoreDBfromS3 = function(){
               });
               */
             }, function(error){
-              logger.info('error ', error );
+              logger.info("error ", error );
             }
           );
         }
@@ -229,14 +229,14 @@ Backup.prototype.compress = function(fileName){
 Backup.prototype.decompress = function(filePath){
   var decompressPromise = deferred();
   var inp2 = fs.createReadStream(filePath);
-  var outputPath = filePath.split('.gz')[0];
-  var out2 = fs.createWriteStream(outputPath, {false:'w'});
+  var outputPath = filePath.split(".gz")[0];
+  var out2 = fs.createWriteStream(outputPath, {false:"w"});
   var inflater = inp2.pipe(zlib.createGunzip()).pipe(out2); /* Uncompress the .gz file */
-  var deflatedFilePath = filePath.replace(/\.gz/, '');
+  var deflatedFilePath = filePath.replace(/\.gz/, "");
   var buffer = [];
   var gunzip = zlib.createGunzip();
   inp2.pipe(gunzip);
-  gunzip.on('data', function(data) {
+  gunzip.on("data", function(data) {
       buffer.push(data.toString())
   }).on("end", function() {
     fs.writeFile(deflatedFilePath, buffer.join(""), function(err) {
