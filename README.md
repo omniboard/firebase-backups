@@ -9,17 +9,17 @@ Clone this repo and run `npm install`
 ##Backup Database
 _Using curl this will download the complete json data and store it in a local file._
 ```sh
-node run.js -restore=false -name=<NAME> -dbHostName=<NAME> -dbToken=<FIREBASE_TOKEN> -folderLocation=<RELATIVE_PATH>
+node run.js -restore=false -name=<NAME> -dbHostName=<NAME> -dbToken=<FIREBASE_TOKEN> -tempDirectory=<RELATIVE_PATH>
 echo Example Call
-node run.js -restore=false -name=firefly -dbHostName=firefly1529 -dbToken=1234567890 -folderLocation=backups/firefly/prod
+node run.js -restore=false -name=firefly -dbHostName=firefly1529 -dbToken=1234567890 -tempDirectory=backups/firefly/prod
 ```
 
 ##Restore Database
 _Using curl this will inflate the gz file and `PUT` the complete json data in the database._
 ```sh
-node run.js -restore=true -name=<NAME> -dbHostName=<NAME> -dbToken=<FIREBASE_TOKEN> -folderLocation=<RELATIVE_PATH>
+node run.js -restore=true -name=<NAME> -dbHostName=<NAME> -dbToken=<FIREBASE_TOKEN> -tempDirectory=<RELATIVE_PATH>
 echo Example Call
-node run.js -restore=true -name=firefly -dbHostName=firefly1529 -dbToken=1234567890 -folderLocation=backups/firefly/prod
+node run.js -restore=true -name=firefly -dbHostName=firefly1529 -dbToken=1234567890 -tempDirectory=backups/firefly/prod
 ```
 
 ## Enable S3
@@ -36,7 +36,7 @@ To enable S3 you must first setup your S3 account with permissions and a bucket 
 - `-name=<NAME>` : The name of the database `Serenity-Mal-1`
 - `-dbHostName=<NAME>` : The hostname of the database `Serenity-Mal-1`. It can be different from <NAME> if you have had to restore 
 - `-dbToken=<FIREBASE_TOKEN>` : The token for the database name in `NAME`
-- `-folderLocation=<RELATIVE_PATH>` : A relative path on the local system that restore is written to before saving to s3 : `Serenity-Mal-1/20170131T181548358Z.json.gz`. It will be deleted when the backup is done. Unless `-saveLocal=true` is set. 
+- `-tempDirectory=<PATH>` : A path on the local system that restore is written to before saving to s3 : `Serenity-Mal-1/20170131T181548358Z.json.gz`. It will be deleted when the backup is done. Unless `-saveLocal=true` is set. Consider using the /tmp directory.
 - `-saveS3` : `true|false`
 - `-saveLocal=true` 
 
@@ -46,7 +46,7 @@ List all backups on s3: `node run.js -list=true -dbHostname=<NAME>`
   
 ### Backup to S3
 ```sh
-node run.js -restore=false -name=<NAME> -dbHostName=<NAME> -dbToken=<FIREBASE_TOKEN> -folderLocation=<RELATIVE_PATH> -saveS3=true
+node run.js -restore=false -name=<NAME> -dbHostName=<NAME> -dbToken=<FIREBASE_TOKEN> -tempDirectory=<RELATIVE_PATH> -saveS3=true
 ```
 
 ### Restore from S3

@@ -49,7 +49,7 @@ Backup.prototype.validate = function(){
     } else if (typeof this.params.dbHostName === 'undefined' || 
       typeof this.params.name === 'undefined' || 
       typeof this.params.dbToken === 'undefined' || 
-      typeof this.params.folderLocation === 'undefined') {
+      typeof this.params.tempDirectory === 'undefined') {
       throw new Error("Improperly configured backup!");
     }
   } else {
@@ -75,9 +75,9 @@ Backup.prototype.isFilename = function(name) {
 };
 Backup.prototype.makeFolderFromStructure = function(folderPath){
   var makeStructurePromise = deferred();
-  var finalPath = null;  
+  var finalPath = null;
   var folderQueue = async.queue( function (folderPath,pathComplete){
-    var parentDir = path.join(__dirname, folderPath);
+    var parentDir = folderPath
     if (!fs.existsSync(parentDir)){
     	fs.mkdirSync(parentDir);
     }
@@ -103,7 +103,7 @@ Backup.prototype.makeFolderFromStructure = function(folderPath){
 Backup.prototype.backupDB = function(){
   var downloadPromise = deferred();
   var self = this;
-  this.makeFolderFromStructure(this.params.folderLocation).then(
+  this.makeFolderFromStructure(this.params.tempDirectory).then(
     function(filePath){
       var URL = `https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}`;
       var FILENAME_DATE = new Date().toISOString().split('-').join('').split(':').join('').split('.').join('');
@@ -148,8 +148,7 @@ Backup.prototype.saveS3 = function(path, filename){
 };
 Backup.prototype.restoreDB = function(){
   var self = this;
-  var FILEPATH = path.join(__dirname, this.params.folderLocation);
-  self.decompress(FILEPATH).then(
+  self.decompress(this.params.tempDirectory).then(
     function(decompressedFileLocation){
       
       setTimeout(function(){
