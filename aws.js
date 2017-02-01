@@ -1,3 +1,4 @@
+const logger = require('./logger');
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const deferred = require('deferred');
@@ -7,13 +8,13 @@ var getAwsParams = function(){
   if (process.env.hasOwnProperty("FBR_S3_BUCKET")) { 
     AWS.FBR_S3_BUCKET = process.env.FBR_S3_BUCKET;
   } else {
-    console.log("Bucket Not Configured in Environment.");
+    logger.info("Bucket Not Configured in Environment.");
     AWS.FBR_S3_BUCKET = null;
   }
   if (process.env.hasOwnProperty("FBR_AWS_REGION")) { 
     AWS.FBR_REGION = process.env.FBR_AWS_REGION;
   } else {
-    console.log("Region Not Configured in Environment.");
+    logger.info("Region Not Configured in Environment.");
     AWS.FBR_REGION = null;
   }
   return AWS;
@@ -31,10 +32,10 @@ exports.getFromAWS = function(bucketLocation, fullPath) {
   var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
   s3.getObject(getParams, function(err, data) {
     if (err) {
-      console.error('get object error: ', err.message);
+      logger.error('get object error: ', err.message);
       def.resolve();
     } else if (data == null || data.Body == null) {
-      console.error('... missing file innerDefnformation');
+      logger.error('... missing file innerDefnformation');
     } else {
       // download compressed file
       var fd = fs.openSync(fullPathToFileName, 'w');
@@ -75,7 +76,7 @@ exports.uploadS3 = function (filepath, bucketLocation) {
             url: `https://s3.amazonaws.com/${AWSData.FBR_S3_BUCKET}/${s3KeyName}`,
             key: s3KeyName
           };
-          console.log( result.msg );
+          logger.info( result.msg );
           def.resolve(result);
         }
       });

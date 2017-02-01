@@ -103,13 +103,17 @@ jmespath@0.15.0:
   version "0.15.0"
   resolved "https://registry.yarnpkg.com/jmespath/-/jmespath-0.15.0.tgz#a3f222a9aae9f966f5d27c796510e28091764217"
 
-lodash@^4.14.0:
+lodash@^4.14.0, lodash@^4.17.2:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
 lodash@~3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.5.0.tgz#19bb3f4d51278f0b8c818ed145c74ecf9fe40e6d"
+
+moment@^2.17.1:
+  version "2.17.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.17.1.tgz#fed9506063f36b10f066c8b59a144d7faebe1d82"
 
 next-tick@~0.2.2:
   version "0.2.2"
@@ -137,6 +141,13 @@ querystring@0.2.0:
 sax@1.1.5, sax@>=0.6.0:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.1.5.tgz#1da50a8d00cdecd59405659f5ff85349fe773743"
+
+simple-node-logger@^0.93.14:
+  version "0.93.14"
+  resolved "https://registry.yarnpkg.com/simple-node-logger/-/simple-node-logger-0.93.14.tgz#4d4610a89b8d7d51afc122b283bc441fdbb8f36a"
+  dependencies:
+    lodash "^4.17.2"
+    moment "^2.17.1"
 
 timers-ext@0.1:
   version "0.1.0"

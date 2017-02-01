@@ -1,3 +1,4 @@
+const logger = require('./logger');
 const zlib = require('zlib');
 const deferred = require('deferred');
 const path = require('path');
@@ -25,11 +26,11 @@ Backup.prototype.getParams = function(){
 }
 Backup.prototype.perform = function(){
   if(this.params.restore === 'false'){
-    console.log(`Starting backup of ${this.params.name}`);
+    logger.info(`Starting backup of ${this.params.name}`);
     this.backupDB();
   }
   if(this.params.restore === 'true'){
-    console.log(`Starting restore of ${this.params.dbHostName}`);
+    logger.info(`Starting restore of ${this.params.dbHostName}`);
     if(typeof this.params.restoreS3 === 'undefined'){
       this.restoreDB();
     } else if(typeof this.params.restoreS3 !== 'undefined'){
@@ -61,7 +62,7 @@ Backup.prototype.listBackups = function(){
   AWS.listS3(this.params.dbHostName).then(
     function(files){
       for(var file in files){
-        console.log( files[file].Key, self.convertToMB(files[file].Size).toFixed(2)+' MB' );
+        logger.info( files[file].Key, self.convertToMB(files[file].Size).toFixed(2)+' MB' );
       }
     }
   );
@@ -141,7 +142,7 @@ Backup.prototype.saveS3 = function(path, filename){
       );
     },5000); 
   } else {
-    console.log('skip s3');
+    logger.info('skip s3');
     savePromise.resolve();
   }
   return savePromise.promise;
@@ -159,9 +160,9 @@ Backup.prototype.restoreDB = function(){
             if( error === null){
               error = JSON.parse(stdout).error;
             }
-            console.log(`Error restoring ${decompressedFileLocation} to ${URL} : ${error}`);
+            logger.info(`Error restoring ${decompressedFileLocation} to ${URL} : ${error}`);
           } else {
-            console.log(`Restored file ${decompressedFileLocation} to ${URL}`);
+            logger.info(`Restored file ${decompressedFileLocation} to ${URL}`);
           }
         });        
       },5000);
@@ -171,18 +172,18 @@ Backup.prototype.restoreDB = function(){
 };
 Backup.prototype.restoreDBfromS3 = function(){
   var self = this;
-  console.log('Restore from s3');
+  logger.info('Restore from s3');
   self.makeFolderFromStructure(`restores/${self.params.restoreLocation}`).then(
     function(restoreFilePath){
       AWS.getFromAWS(self.params.restoreLocation, restoreFilePath).then(
         function(decompressedFileLocation){
-          console.log('File downloaded');
+          logger.info('File downloaded');
           self.decompress(decompressedFileLocation).then(
             function(decompressedFileLocation){
-              console.log('file decompressed ');
-              console.log( 'To Restore Run Command:');
+              logger.info('file decompressed ');
+              logger.info( 'To Restore Run Command:');
               var URL = `'https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}'`;
-              console.log(`curl -X PUT ${URL} --progress-bar --upload-file ${decompressedFileLocation}`);
+              logger.info(`curl -X PUT ${URL} --progress-bar --upload-file ${decompressedFileLocation}`);
           
               if( typeof self.params.saveLocal === 'undefined' || self.params.saveLocal !== 'true'){
                 fs.unlink(decompressedFileLocation);
@@ -191,22 +192,22 @@ Backup.prototype.restoreDBfromS3 = function(){
               
               /* TODO: GET THIS WORKING 
               child_process.execFile('curl', ['-X', 'PUT', URL, '--progress-bar', '--upload-file', decompressedFileLocation], function(error, stdout, stderr){
-                console.log( 'error ', error );
-                console.log( 'stdout ', stdout );
-                console.log( 'stderr ', stderr );
+                logger.info( 'error ', error );
+                logger.info( 'stdout ', stdout );
+                logger.info( 'stderr ', stderr );
 
                 if( error || JSON.parse(stdout).error ){
                   if( error === null){
                     error = JSON.parse(stdout).error;
                   }
-                  console.log(`Error restoring to ${URL} : ${error}`);
+                  logger.info(`Error restoring to ${URL} : ${error}`);
                 } else {
-                  console.log(`Restored file to ${URL}`);
+                  logger.info(`Restored file to ${URL}`);
                 }
               });
               */
             }, function(error){
-              console.log('error ', error );
+              logger.info('error ', error );
             }
           );
         }
@@ -221,7 +222,7 @@ Backup.prototype.compress = function(fileName){
 
   inp.pipe(gzip).pipe(out);
   fs.unlink(fileName);
-  console.log(`Backup saved Locally at : ${fileName}.gz`);
+  logger.info(`Backup saved Locally at : ${fileName}.gz`);
   compressPromise.resolve(`${fileName}.gz`);
   return compressPromise.promise;
 };
@@ -240,13 +241,13 @@ Backup.prototype.decompress = function(filePath){
   }).on("end", function() {
     fs.writeFile(deflatedFilePath, buffer.join(""), function(err) {
         if(err) {
-            return console.log(err);
+            return logger.info(err);
         }
-        console.log("The file was saved locally");
+        logger.info("The file was saved locally");
         decompressPromise.resolve(deflatedFilePath);
     }); 
   }).on("error", function(e) {
-    console.log( e );
+    logger.info( e );
     decompressPromise.reject( e );
   })    
   
