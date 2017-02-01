@@ -2,4 +2,8 @@
 ###############
 node_modules/
 backups/
+restores/
 
+# Files #
+#########
+.env
