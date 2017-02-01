@@ -37,7 +37,6 @@ Backup.prototype.perform = function(){
     }
   }
   if(this.params.list === 'true'){
-    console.log(`Starting list ${this.params.dbHostName}`);
     this.listBackups();
   }
 };

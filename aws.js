@@ -10,20 +10,8 @@ var getAwsParams = function(){
     console.log("Bucket Not Configured in Environment.");
     AWS.FBR_S3_BUCKET = null;
   }
-  if (process.env.hasOwnProperty("FBR_ACCESS_KEY_ID")) { 
-    AWS.FBR_ACCESS_KEY_ID = process.env.FBR_ACCESS_KEY_ID;
-  } else {
-    console.log("Access Key Not Configured in Environment.");
-    AWS.FBR_ACCESS_KEY_ID = null;
-  }
-  if (process.env.hasOwnProperty("FBR_SECRET_ACCESS_KEY")) { 
-    AWS.FBR_SECRET_ACCESS_KEY = process.env.FBR_SECRET_ACCESS_KEY;
-  } else {
-    console.log("Access Secret Not Configured in Environment.");
-    AWS.FBR_SECRET_ACCESS_KEY = null;
-  }
-  if (process.env.hasOwnProperty("FBR_REGION")) { 
-    AWS.FBR_REGION = process.env.FBR_REGION;
+  if (process.env.hasOwnProperty("FBR_AWS_REGION")) { 
+    AWS.FBR_REGION = process.env.FBR_AWS_REGION;
   } else {
     console.log("Region Not Configured in Environment.");
     AWS.FBR_REGION = null;
@@ -40,7 +28,7 @@ exports.getFromAWS = function(bucketLocation, fullPath) {
     Bucket: AWSData.FBR_S3_BUCKET,
     Key: bucketLocation
   };
-  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET},accessKeyId: AWSData.FBR_ACCESS_KEY_ID, secretAccessKey: AWSData.FBR_SECRET_ACCESS_KEY});
+  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
   s3.getObject(getParams, function(err, data) {
     if (err) {
       console.error('get object error: ', err.message);
@@ -63,7 +51,7 @@ exports.uploadS3 = function (filepath, bucketLocation) {
   var def = deferred();
   var s3KeyName = bucketLocation+"/"+filepath.split('/').pop();
   var AWSData = getAwsParams();
-  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET},accessKeyId: AWSData.FBR_ACCESS_KEY_ID, secretAccessKey: AWSData.FBR_SECRET_ACCESS_KEY});
+  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
   AWS.config.region = AWSData.FBR_REGION;
   fs.readFile(filepath, function (err, filedata) {
     if(err) {
@@ -100,7 +88,7 @@ exports.uploadS3 = function (filepath, bucketLocation) {
 exports.listS3 = function(bucket) {
   var listPromise = deferred();
   var AWSData = getAwsParams();
-  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET},accessKeyId: AWSData.FBR_ACCESS_KEY_ID, secretAccessKey: AWSData.FBR_SECRET_ACCESS_KEY});
+  var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
   var params = {
     Bucket: AWSData.FBR_S3_BUCKET,
     Delimiter: ',',
