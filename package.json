@@ -23,7 +23,9 @@
     "async": "^2.1.4",
     "aws-sdk": "^2.7.28",
     "deferred": "^0.7.5",
-    "dotenv": "^4.0.0",
     "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "dotenv": "^4.0.0"
   }
 }
