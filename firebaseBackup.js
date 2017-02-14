@@ -31,8 +31,9 @@ Backup.prototype.perform = function(){
   if(this.params.restore === 'false'){
     console.log(`Starting backup of ${this.params.name}`);
     self.backupDB().then(
-      function(filePath) {
-        console.log( filePath );
+      function backupSucceeded(filePath) {
+        self.removeFile(filePath);
+      }, function backupRejected(filePath){
         self.removeFile(filePath);
       }
     );
@@ -126,7 +127,7 @@ Backup.prototype.backupDB = function(){
               function(){
                 downloadPromise.resolve(compressedFileName);
               }, function(){
-                downloadPromise.resolve(compressedFileName);
+                downloadPromise.reject(compressedFileName);
               }
             );
           });
