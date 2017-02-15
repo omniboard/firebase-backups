@@ -23,10 +23,20 @@ Backup.prototype.getParams = function(){
     this.params[ param[0].replace(/-/,"") ] = param[1];
   }
 }
+Backup.prototype.removeFile = function(filePath) {
+  fs.unlink(filePath);
+};
 Backup.prototype.perform = function(){
+  var self = this;
   if(this.params.restore === 'false'){
     console.log(`Starting backup of ${this.params.name}`);
-    this.backupDB();
+    self.backupDB().then(
+      function backupSucceeded(filePath) {
+        self.removeFile(filePath);
+      }, function backupRejected(filePath){
+        self.removeFile(filePath);
+      }
+    );
   }
   if(this.params.restore === 'true'){
     console.log(`Starting restore of ${this.params.dbHostName}`);
@@ -115,9 +125,9 @@ Backup.prototype.backupDB = function(){
           self.compress(fileName).then(function(compressedFileName){
             self.saveS3(compressedFileName, self.params.dbHostName ).then(
               function(){
-                downloadPromise.resolve();
-              }, function(){
-                downloadPromise.resolve();
+                downloadPromise.resolve(compressedFileName);
+              }, function(err){
+                throw new Error `Unable to save ${err.message}`;
               }
             );
           });
@@ -136,7 +146,7 @@ Backup.prototype.saveS3 = function(path, filename){
         function(complete){
           savePromise.resolve();
         },function(error){
-          savePromise.reject();
+          savePromise.reject(error);
         }
       );
     },5000); 
