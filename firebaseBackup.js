@@ -126,8 +126,8 @@ Backup.prototype.backupDB = function(){
             self.saveS3(compressedFileName, self.params.dbHostName ).then(
               function(){
                 downloadPromise.resolve(compressedFileName);
-              }, function(){
-                downloadPromise.reject(compressedFileName);
+              }, function(err){
+                throw new Error `Unable to save ${err.message}`;
               }
             );
           });
@@ -146,7 +146,7 @@ Backup.prototype.saveS3 = function(path, filename){
         function(complete){
           savePromise.resolve();
         },function(error){
-          savePromise.reject();
+          savePromise.reject(error);
         }
       );
     },5000); 
