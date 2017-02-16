@@ -1,0 +1,132 @@
+parserOptions:
+  ecmaVersion: 6
+  sourceType: "module"
+env:
+  browser: true
+  node: true
+plugins:
+  - promise
+extends: eslint:recommended
+rules:
+  indent:
+    - "error"
+    - 2
+  linebreak-style:
+    - "error"
+    - "unix"
+  quotes:
+    - "error"
+    - "single"
+    - { "avoidEscape": true, "allowTemplateLiterals": true }
+  semi:
+    - "error"
+    - "always"
+  no-console:
+    - "error"
+    - { "allow": ["warn", "error"] }
+  curly: "error"
+  valid-jsdoc: "error"
+  dot-notation: "error"
+  guard-for-in: "error"
+  no-proto: "error"
+  no-return-assign: "error"
+  no-throw-literal: "error"
+  no-use-before-define:
+    - "error"
+    - { "functions": false }
+  callback-return: "error"
+  global-require: "error"
+  handle-callback-err: "error"
+  no-mixed-requires: "error"
+  no-new-require: "error"
+  no-path-concat: "error"
+  no-sync: "error"
+  array-bracket-spacing: "error"
+  block-spacing: "error"
+  brace-style: "error"
+  camelcase: "error"
+  comma-dangle:
+    - "error"
+    - "always-multiline"
+  comma-spacing: "error"
+  comma-style: "error"
+  complexity: "error"
+  computed-property-spacing: "error"
+  consistent-return: "error"
+  consistent-this:
+    - "error"
+    - "self"
+  eol-last:
+    - "error"
+    - "always"
+  func-names:
+    - "error"
+    - "as-needed"
+  key-spacing: "error"
+  keyword-spacing: "error"
+  max-depth:
+    - "error"
+    - { "max": 5 }
+  max-len:
+    - "error"
+    - { "code": 100, "comments": 100, "ignoreUrls": true, "ignoreTemplateLiterals": true, "ignoreRegExpLiterals": true }
+  max-lines:
+    - "error"
+    - { "max": 150, "skipBlankLines": true, "skipComments": true }
+  max-nested-callbacks:
+    - "error"
+    - { "max": 4 }
+  max-statements-per-line:
+    - "error"
+    - { "max": 1 }
+  multiline-ternary:
+    - "error"
+    - "never"
+  new-cap: "error"
+  no-bitwise: "error"
+  no-inline-comments: "error"
+  no-lonely-if: "error"
+  no-multiple-empty-lines: "error"
+  no-nested-ternary: "error"
+  no-tabs: "error"
+  no-trailing-spaces:
+    - "error"
+    - { "skipBlankLines": true }
+  no-unneeded-ternary: "error"
+  no-whitespace-before-property: "error"
+  one-var-declaration-per-line: "error"
+  operator-linebreak:
+    - "error"
+    - "after"
+  padded-blocks:
+    - "error"
+    - "never"
+  semi-spacing: "error"
+  space-before-blocks: "error"
+  space-before-function-paren:
+    - "error"
+    - "never"
+  space-in-parens:
+    - "error"
+    - "never"
+  space-infix-ops: "error"
+  space-unary-ops:
+    - "error"
+    - { "words": true, "nonwords": false }
+  spaced-comment:
+    - "error"
+    - "always"
+  arrow-body-style: "error"
+  arrow-parens: "error"
+  arrow-spacing: "error"
+  no-confusing-arrow: "error"
+  prefer-const: "error"
+  prefer-template: "error"
+  template-curly-spacing: "error"
+  wrap-iife: "error"
+  yoda: "error"
+  promise/catch-or-return: "error"
+  promise/no-native: "error"
+  promise/no-nesting: "warn"
+  promise/no-promise-in-callback: "warn"
+  promise/no-callback-in-promise: "warn"
