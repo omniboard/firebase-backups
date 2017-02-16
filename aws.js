@@ -2,8 +2,9 @@ const fs = require('fs');
 const AWS = require('aws-sdk');
 const deferred = require('deferred');
 
-var getAwsParams = function(){  
+var getAwsParams = function() {  
   var AWS = {};
+  
   if (process.env.hasOwnProperty("FBR_S3_BUCKET")) { 
     AWS.FBR_S3_BUCKET = process.env.FBR_S3_BUCKET;
   } else {
@@ -29,6 +30,7 @@ exports.getFromAWS = function(bucketLocation, fullPath) {
     Key: bucketLocation
   };
   var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
+  
   s3.getObject(getParams, function(err, data) {
     if (err) {
       console.error('get object error: ', err.message);
@@ -39,7 +41,7 @@ exports.getFromAWS = function(bucketLocation, fullPath) {
       // download compressed file
       var fd = fs.openSync(fullPathToFileName, 'w');
       fs.writeSync(fd, data.Body, 0, data.Body.length, 0);
-      fs.closeSync(fd);      
+      fs.closeSync(fd);
       def.resolve(fullPathToFileName);
     }
   });
@@ -52,9 +54,10 @@ exports.uploadS3 = function (filepath, bucketLocation) {
   var s3KeyName = bucketLocation+"/"+filepath.split('/').pop();
   var AWSData = getAwsParams();
   var s3 = new AWS.S3({params: {Bucket: AWSData.FBR_S3_BUCKET}});
+  
   AWS.config.region = AWSData.FBR_REGION;
   fs.readFile(filepath, function (err, filedata) {
-    if(err) {
+    if (err) {
       def.reject('unable to read file to upload to s3');
     } else {
       var data = {
@@ -63,6 +66,7 @@ exports.uploadS3 = function (filepath, bucketLocation) {
         Body: filedata
       };
       var result;
+      
       s3.putObject(data, function (err, data) {
         if (err) {
           result = {
