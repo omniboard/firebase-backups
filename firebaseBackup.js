@@ -3,7 +3,7 @@ const deferred = require('deferred');
 const async = require('async');
 const fs = require('fs');
 const gzip = zlib.createGzip();
-const child_process = require('child_process');
+const childProcess = require('child_process');
 const AWS = require('./aws');
 const logger = require('./logger');
 
@@ -17,7 +17,7 @@ Backup.prototype.convertToMB = function convertToMB(bytes) {
 }
 Backup.prototype.getParams = function getParams() {
   this.params = {};
-  for (var i=2; i < process.argv.length; i++) {
+  for (var i = 2; i < process.argv.length; i++) {
     var param = process.argv[i].split('=');
     this.params[param[0].replace(/-/, '')] = param[1];
   }
@@ -28,7 +28,7 @@ Backup.prototype.removeFile = function removeFile(filePath) {
 Backup.prototype.startBackup = function startBackup() {
   var self = this;
   
-  self.backupDB().then( function backupSucceeded(filePath) {
+  self.backupDB().then(function backupSucceeded(filePath) {
     self.removeFile(filePath);
   }, function backupRejected(filePath) {
     self.removeFile(filePath);
@@ -91,7 +91,7 @@ Backup.prototype.listBackups = function listBackups() {
     function listS3Success(files) {
       for (var file in files) {
         if (typeof files[file] !== 'undefined') {
-          logger.info( `${files[file].Key} - ${self.convertToMB(files[file].Size).toFixed(2)} MB`);
+          logger.info(`${files[file].Key} - ${self.convertToMB(files[file].Size).toFixed(2)} MB`);
         }
       }
     }
@@ -107,14 +107,14 @@ Backup.prototype.isFilename = function isFilename(name) {
 Backup.prototype.makeFolderFromStructure = function makeFolderFromStructure(folderPath) {
   var makeStructurePromise = deferred();
   var finalPath = null;
-  var folderQueue = async.queue( function folderQueue(folderPath, pathComplete) {
+  var folderQueue = async.queue(function folderQueue(folderPath, pathComplete) {
     var parentDir = folderPath
     if (!fs.existsSync(parentDir)) {
     	fs.mkdirSync(parentDir);
     }
-    finalPath = parentDir; 
+    finalPath = parentDir;
     pathComplete();
-  },1);
+  }, 1);
   folderQueue.drain = function folderQueueDrain() {
     makeStructurePromise.resolve(finalPath);
   };
@@ -124,31 +124,34 @@ Backup.prototype.makeFolderFromStructure = function makeFolderFromStructure(fold
   var completePath = '';
   for (var folder in folders) {
     if (!this.isFilename(folders[folder])) {
-      completePath = completePath + folders[folder] + '/';
-      folderQueue.push( completePath );
+      completePath = `${completePath}${folders[folder]}/`;
+      folderQueue.push(completePath);
     }
   }
   folderQueue.resume();
   return makeStructurePromise.promise;
 };
+Backup.prototype.cleanUpDate = function cleanUpDate(){
+  return new Date().toISOString().split('-').join('').split(':').join('').split('.').join('');
+}
 Backup.prototype.backupDB = function backupDB() {
   var downloadPromise = deferred();
   var self = this;
   this.makeFolderFromStructure(this.params.tempDirectory).then(
     function makeFolderStructureResult(filePath) {
       var URL = `https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}`;
-      var FILENAME_DATE = new Date().toISOString().split('-').join('').split(':').join('').split('.').join('');
-      var fileName = filePath+FILENAME_DATE+'.json';
+      var FILENAME_DATE = self.cleanUpDate();
+      var fileName = `${filePath}${FILENAME_DATE}.json`;
       
-      child_process.execFile('curl', ['-o', fileName, URL], function curlResult(error, stdout, stderr) {
+      childProcess.execFile('curl', ['-o', fileName, URL], function result(error, out, err) {
         if (error) {
           downloadPromise.reject();
         } else {
-          self.compress(fileName).then(function(compressedFileName){
-            self.saveS3(compressedFileName, self.params.dbHostName ).then(
-              function() {
+          self.compress(fileName).then(function compressResults(compressedFileName) {
+            self.saveS3(compressedFileName, self.params.dbHostName).then(
+              function saveS3Success() {
                 downloadPromise.resolve(compressedFileName);
-              }, function(err) {
+              }, function saveS3Error(err) {
                 throw new Error `Unable to save ${err.message}`;
               }
             );
@@ -162,12 +165,12 @@ Backup.prototype.backupDB = function backupDB() {
 Backup.prototype.saveS3 = function saveS3(path, filename) {
   var savePromise = deferred();
   
-  if(this.params.saveS3 === 'true') {
-    setTimeout(function() {
-      AWS.uploadS3(path,filename).then(
-        function(complete) {
+  if (this.params.saveS3 === 'true') {
+    setTimeout(function timeoutFunction() {
+      AWS.uploadS3(path, filename).then(
+        function uploadComplete() {
           savePromise.resolve();
-        },function(error) {
+        }, function uploadError(error) {
           savePromise.reject(error);
         }
       );
@@ -185,7 +188,7 @@ Backup.prototype.restoreDB = function restoreDB() {
       
       setTimeout(function() {
         var URL = `https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}`;
-        child_process.execFile('curl', ['-X', 'PUT', URL, '--upload-file', decompressedFileLocation], function(error, stdout, stderr) {
+        childProcess.execFile('curl', ['-X', 'PUT', URL, '--upload-file', decompressedFileLocation], function(error, stdout, stderr) {
 
           if (error || JSON.parse(stdout).error) {
             if (error === null) {
@@ -222,7 +225,7 @@ Backup.prototype.restoreDBfromS3 = function restoreDBfromS3() {
               }
               
               /* TODO: GET THIS WORKING 
-              child_process.execFile('curl', ['-X', 'PUT', URL, '--progress-bar', '--upload-file', decompressedFileLocation], function(error, stdout, stderr){
+              childProcess.execFile('curl', ['-X', 'PUT', URL, '--progress-bar', '--upload-file', decompressedFileLocation], function(error, stdout, stderr){
                 logger.info( 'error ', error );
                 logger.info( 'stdout ', stdout );
                 logger.info( 'stderr ', stderr );
