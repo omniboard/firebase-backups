@@ -27,13 +27,11 @@ Backup.prototype.removeFile = function removeFile(filePath) {
 Backup.prototype.startBackup = function startBackup() {
   var self = this;
   
-  self.backupDB().then(
-    function backupSucceeded(filePath) {
-      self.removeFile(filePath);
-    }, function backupRejected(filePath) {
-      self.removeFile(filePath);
-    }
-  );
+  self.backupDB().then( function backupSucceeded(filePath) {
+    self.removeFile(filePath);
+  }, function backupRejected(filePath) {
+    self.removeFile(filePath);
+  });
 };
 Backup.prototype.startRestore = function startRestore() {
   console.log(`Starting restore of ${this.params.dbHostName}`);
@@ -108,7 +106,7 @@ Backup.prototype.isFilename = function isFilename(name) {
 Backup.prototype.makeFolderFromStructure = function makeFolderFromStructure(folderPath) {
   var makeStructurePromise = deferred();
   var finalPath = null;
-  var folderQueue = async.queue( function (folderPath,pathComplete) {
+  var folderQueue = async.queue( function folderQueue(folderPath, pathComplete) {
     var parentDir = folderPath
     if (!fs.existsSync(parentDir)) {
     	fs.mkdirSync(parentDir);
@@ -116,7 +114,7 @@ Backup.prototype.makeFolderFromStructure = function makeFolderFromStructure(fold
     finalPath = parentDir; 
     pathComplete();
   },1);
-  folderQueue.drain = function() {
+  folderQueue.drain = function folderQueueDrain() {
     makeStructurePromise.resolve(finalPath);
   };
   folderQueue.pause();
@@ -136,13 +134,13 @@ Backup.prototype.backupDB = function backupDB() {
   var downloadPromise = deferred();
   var self = this;
   this.makeFolderFromStructure(this.params.tempDirectory).then(
-    function(filePath) {
+    function makeFolderStructureResult(filePath) {
       var URL = `https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}`;
       var FILENAME_DATE = new Date().toISOString().split('-').join('').split(':').join('').split('.').join('');
       var fileName = filePath+FILENAME_DATE+'.json';
       
-      child_process.execFile('curl', ['-o', fileName, URL], function(error, stdout, stderr) {
-        if ( error ) {
+      child_process.execFile('curl', ['-o', fileName, URL], function curlResult(error, stdout, stderr) {
+        if (error) {
           downloadPromise.reject();
         } else {
           self.compress(fileName).then(function(compressedFileName){

@@ -5,13 +5,13 @@ const deferred = require('deferred');
 var getAwsParams = function getAwsParams() {
   var AWS = {};
   
-  if (process.env.hasOwnProperty('FBR_S3_BUCKET')) { 
+  if (process.env.hasOwnProperty('FBR_S3_BUCKET')) {
     AWS.FBR_S3_BUCKET = process.env.FBR_S3_BUCKET;
   } else {
     console.log('Bucket Not Configured in Environment.');
     AWS.FBR_S3_BUCKET = null;
   }
-  if (process.env.hasOwnProperty('FBR_AWS_REGION')) { 
+  if (process.env.hasOwnProperty('FBR_AWS_REGION')) {
     AWS.FBR_REGION = process.env.FBR_AWS_REGION;
   } else {
     console.log('Region Not Configured in Environment.');
