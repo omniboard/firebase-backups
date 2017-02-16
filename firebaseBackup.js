@@ -184,39 +184,46 @@ Backup.prototype.saveS3 = function saveS3(path, filename) {
 Backup.prototype.restoreDB = function restoreDB() {
   var self = this;
   self.decompress(this.params.tempDirectory).then(
-    function(decompressedFileLocation) {
+    function decompressSuccess(fileLocation) {
       
-      setTimeout(function() {
+      setTimeout(function decompressTimeout() {
         var URL = `https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}`;
-        childProcess.execFile('curl', ['-X', 'PUT', URL, '--upload-file', decompressedFileLocation], function(error, stdout, stderr) {
-
-          if (error || JSON.parse(stdout).error) {
-            if (error === null) {
-              error = JSON.parse(stdout).error;
+        childProcess.execFile('curl', ['-X', 'PUT', URL, '--upload-file', fileLocation], 
+          function childProcessResult(error, stdout, stderr) {
+            if (error || JSON.parse(stdout).error) {
+              if (error === null) {
+                error = JSON.parse(stdout).error;
+              }
+              logger.info(`Error restoring ${decompressedFileLocation} to ${URL} : ${error} - ${stderr}`);
+            } else {
+              logger.info(`Restored file ${decompressedFileLocation} to ${URL}`);
             }
-            logger.info(`Error restoring ${decompressedFileLocation} to ${URL} : ${error}`);
-          } else {
-            logger.info(`Restored file ${decompressedFileLocation} to ${URL}`);
           }
-        });
+        );
       },5000);
       
     }
   );  
 };
+Backup.prototype.buildRestoreURL = function() {
+  var host = this.params.dbHostName;
+  var token = this.params.token;
+  
+  return `'https://${host}.firebaseio.com/.json?print=pretty&auth=${token}'`;
+};
 Backup.prototype.restoreDBfromS3 = function restoreDBfromS3() {
   var self = this;
   logger.info('Restore from s3');
   self.makeFolderFromStructure(`restores/${self.params.restoreLocation}`).then(
-    function(restoreFilePath) {
+    function makeFolderFromStructureResult(restoreFilePath) {
       AWS.getFromAWS(self.params.restoreLocation, restoreFilePath).then(
-        function(decompressedFileLocation) {
+        function getFromAWSResults(decompressedFileLocation) {
           logger.info('File downloaded');
           self.decompress(decompressedFileLocation).then(
-            function(decompressedFileLocation) {
+            function decompressResults(decompressedFileLocation) {
               logger.info('file decompressed ');
               logger.info( 'To Restore Run Command:');
-              var URL = `'https://${self.params.dbHostName}.firebaseio.com/.json?print=pretty&auth=${self.params.dbToken}'`;
+              var URL = self.buildRestoreURL();
               logger.info(`curl -X PUT ${URL} --progress-bar --upload-file ${decompressedFileLocation}`);
           
               if (typeof self.params.saveLocal === 'undefined' || self.params.saveLocal !== 'true') {

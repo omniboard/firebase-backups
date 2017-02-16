@@ -62,14 +62,13 @@ exports.uploadS3 = function uploadS3(filepath, bucketLocation) {
     if (err) {
       def.reject('unable to read file to upload to s3');
     } else {
-      var data = {
+      var result;
+      
+      s3.putObject({
         Bucket: AWSData.FBR_S3_BUCKET,
         Key: s3KeyName,
         Body: filedata,
-      };
-      var result;
-      
-      s3.putObject(data, function s3PutResults(err, data) {
+      }, function s3PutResults(err, data) {
         if (err) {
           result = {
             msg: `Error uploading data: ${bucketLocation}`,
