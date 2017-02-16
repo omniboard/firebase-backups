@@ -32,7 +32,9 @@ Backup.prototype.startBackup = function startBackup() {
     self.removeFile(filePath);
   }, function backupRejected(filePath) {
     self.removeFile(filePath);
-  }).catch(function(e) { throw e });
+  }).catch(function(e) {
+    throw e;
+  });
 };
 Backup.prototype.startRestore = function startRestore() {
   logger.info(`Starting restore of ${this.params.dbHostName}`);
@@ -95,7 +97,9 @@ Backup.prototype.listBackups = function listBackups() {
         }
       }
     }
-  ).catch(function(e) { throw e });
+  ).catch(function(e) {
+    throw e;
+  });
 };
 Backup.prototype.isFilename = function isFilename(name) {
   if (name.indexOf('.') > -1) {
@@ -154,12 +158,18 @@ Backup.prototype.backupDB = function backupDB() {
               }, function saveS3Error(err) {
                 throw new Error `Unable to save ${err.message}`;
               }
-            ).catch(function(e) { throw e });
-          }).catch(function(e) { throw e });
+            ).catch(function(e) {
+              throw e;
+            });
+          }).catch(function(e) {
+            throw e;
+          });
         }
       });
     }
-  ).catch(function(e) { throw e });
+  ).catch(function(e) {
+    throw e;
+  });
   return downloadPromise.promise;
 };
 Backup.prototype.saveS3 = function saveS3(path, filename) {
@@ -173,7 +183,9 @@ Backup.prototype.saveS3 = function saveS3(path, filename) {
         }, function uploadError(error) {
           savePromise.reject(error);
         }
-      ).catch(function(e) { throw e });
+      ).catch(function(e) {
+        throw e;
+      });
     }, 5000); 
   } else {
     logger.info('skip s3');
@@ -203,7 +215,9 @@ Backup.prototype.restoreDB = function restoreDB() {
       },5000);
       
     }
-  ).catch(function(e) { throw e });  
+  ).catch(function(e) {
+    throw e;
+  });
 };
 Backup.prototype.buildRestoreURL = function() {
   var host = this.params.dbHostName;
@@ -250,11 +264,17 @@ Backup.prototype.restoreDBfromS3 = function restoreDBfromS3() {
             }, function(error) {
               logger.info('error ', error );
             }
-          ).catch(function(e) { throw e });
+          ).catch(function(e) {
+            throw e;
+          });
         }
-      ).catch(function(e) { throw e });  
+      ).catch(function(e) {
+        throw e;
+      });
     }
-  ).catch(function(e) { throw e });
+  ).catch(function(e) {
+    throw e;
+  });
 };
 Backup.prototype.compress = function compress(fileName) {
   var compressPromise= deferred();
@@ -282,10 +302,10 @@ Backup.prototype.decompress = function decompress(filePath) {
     buffer.push(data.toString());
   }).on("end", function() {
     fs.writeFile(deflatedFilePath, buffer.join(""), function(err) {
-      if(err) {
+      if (err) {
         return logger.info(err);
       }
-      logger.info("The file was saved locally");
+      logger.info('The file was saved locally');
       decompressPromise.resolve(deflatedFilePath);
     }); 
   }).on("error", function(e) {
