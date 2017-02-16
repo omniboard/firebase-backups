@@ -1,6 +1,7 @@
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const deferred = require('deferred');
+const logger = require('./logger');
 
 var getAwsParams = function getAwsParams() {
   var AWS = {};
@@ -8,13 +9,13 @@ var getAwsParams = function getAwsParams() {
   if (process.env.hasOwnProperty('FBR_S3_BUCKET')) {
     AWS.FBR_S3_BUCKET = process.env.FBR_S3_BUCKET;
   } else {
-    console.log('Bucket Not Configured in Environment.');
+    logger.info('Bucket Not Configured in Environment.');
     AWS.FBR_S3_BUCKET = null;
   }
   if (process.env.hasOwnProperty('FBR_AWS_REGION')) {
     AWS.FBR_REGION = process.env.FBR_AWS_REGION;
   } else {
-    console.log('Region Not Configured in Environment.');
+    logger.info('Region Not Configured in Environment.');
     AWS.FBR_REGION = null;
   }
   return AWS;
@@ -80,7 +81,7 @@ exports.uploadS3 = function uploadS3(filepath, bucketLocation) {
             url: `https://s3.amazonaws.com/${AWSData.FBR_S3_BUCKET}/${s3KeyName}`,
             key: s3KeyName,
           };
-          console.log(result.msg);
+          logger.info(result.msg);
           def.resolve(result);
         }
       });
