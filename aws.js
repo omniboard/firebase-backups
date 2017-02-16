@@ -88,7 +88,7 @@ exports.uploadS3 = function uploadS3(filepath, bucketLocation) {
   });
 
   return def.promise;
-}
+};
 
 exports.listS3 = function listS3(bucket) {
   var listPromise = deferred();

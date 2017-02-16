@@ -2,7 +2,7 @@ const logger = require('./logger');
 try {
   require('dotenv').config();
   logger.info('dotenv loaded');
-} catch(e) {
+} catch (e) {
   logger.info('dotenv is not loaded');
 }
 
