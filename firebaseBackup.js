@@ -307,7 +307,7 @@ Backup.prototype.decompress = function decompress(filePath) {
       }
       logger.info('The file was saved locally');
       decompressPromise.resolve(deflatedFilePath);
-      return;
+      return true;
     });
   }).on('error', function gunzipError(e) {
     logger.info(e);
