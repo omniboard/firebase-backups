@@ -14,14 +14,14 @@ function Backup() {
 }
 Backup.prototype.convertToMB = function convertToMB(bytes) {
   return parseFloat(bytes / 1024 / 1024);
-}
+};
 Backup.prototype.getParams = function getParams() {
   this.params = {};
   for (var i = 2; i < process.argv.length; i++) {
     var param = process.argv[i].split('=');
     this.params[param[0].replace(/-/, '')] = param[1];
   }
-}
+};
 Backup.prototype.removeFile = function removeFile(filePath) {
   fs.unlink(filePath);
 };
@@ -32,6 +32,8 @@ Backup.prototype.startBackup = function startBackup() {
     self.removeFile(filePath);
   }, function backupRejected(filePath) {
     self.removeFile(filePath);
+  }).catch(function catchError(e) {
+    throw e;
   });
 };
 Backup.prototype.startRestore = function startRestore() {
@@ -95,7 +97,9 @@ Backup.prototype.listBackups = function listBackups() {
         }
       }
     }
-  );
+  ).catch(function catchError(e) {
+    throw e;
+  });
 };
 Backup.prototype.isFilename = function isFilename(name) {
   if (name.indexOf('.') > -1) {
@@ -133,7 +137,7 @@ Backup.prototype.makeFolderFromStructure = function makeFolderFromStructure(fold
 };
 Backup.prototype.cleanUpDate = function cleanUpDate(){
   return new Date().toISOString().split('-').join('').split(':').join('').split('.').join('');
-}
+};
 Backup.prototype.backupDB = function backupDB() {
   var downloadPromise = deferred();
   var self = this;
@@ -154,12 +158,18 @@ Backup.prototype.backupDB = function backupDB() {
               }, function saveS3Error(err) {
                 throw new Error `Unable to save ${err.message}`;
               }
-            );
+            ).catch(function catchError(e) {
+              throw e;
+            });
+          }).catch(function catchError(e) {
+            throw e;
           });
         }
       });
     }
-  )
+  ).catch(function catchError(e) {
+    throw e;
+  });
   return downloadPromise.promise;
 };
 Backup.prototype.saveS3 = function saveS3(path, filename) {
@@ -173,8 +183,10 @@ Backup.prototype.saveS3 = function saveS3(path, filename) {
         }, function uploadError(error) {
           savePromise.reject(error);
         }
-      );
-    },5000); 
+      ).catch(function catchError(e) {
+        throw e;
+      });
+    }, 5000); 
   } else {
     logger.info('skip s3');
     savePromise.resolve();
@@ -203,7 +215,9 @@ Backup.prototype.restoreDB = function restoreDB() {
       },5000);
       
     }
-  );  
+  ).catch(function catchError(e) {
+    throw e;
+  });
 };
 Backup.prototype.buildRestoreURL = function() {
   var host = this.params.dbHostName;
@@ -250,11 +264,17 @@ Backup.prototype.restoreDBfromS3 = function restoreDBfromS3() {
             }, function(error) {
               logger.info('error ', error );
             }
-          );
+          ).catch(function catchError(e) {
+            throw e;
+          });
         }
-      );  
+      ).catch(function catchError(e) {
+        throw e;
+      });
     }
-  );
+  ).catch(function catchError(e) {
+    throw e;
+  });
 };
 Backup.prototype.compress = function compress(fileName) {
   var compressPromise= deferred();
@@ -279,19 +299,20 @@ Backup.prototype.decompress = function decompress(filePath) {
   
   inp2.pipe(gunzip);
   gunzip.on('data', function(data) {
-      buffer.push(data.toString())
-  }).on("end", function() {
-    fs.writeFile(deflatedFilePath, buffer.join(""), function(err) {
-        if(err) {
-          return logger.info(err);
-        }
-        logger.info("The file was saved locally");
-        decompressPromise.resolve(deflatedFilePath);
-    }); 
-  }).on("error", function(e) {
-    logger.info( e );
-    decompressPromise.reject( e );
-  })    
+    buffer.push(data.toString());
+  }).on('end', function gunzipEnd() {
+    fs.writeFile(deflatedFilePath, buffer.join(''), function gunzipWriteError(err) {
+      if (err) {
+        return logger.info(err);
+      }
+      logger.info('The file was saved locally');
+      decompressPromise.resolve(deflatedFilePath);
+      return true;
+    });
+  }).on('error', function gunzipError(e) {
+    logger.info(e);
+    decompressPromise.reject(e);
+  })
   
   return decompressPromise.promise;
 };
