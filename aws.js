@@ -68,7 +68,7 @@ exports.uploadS3 = function uploadS3(filepath, bucketLocation) {
         Bucket: AWSData.FBR_S3_BUCKET,
         Key: s3KeyName,
         Body: filedata,
-      }, function s3PutResults(err, data) {
+      }, function s3PutResults(err) {
         if (err) {
           result = {
             msg: `Error uploading data: ${bucketLocation}`,

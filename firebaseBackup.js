@@ -147,7 +147,7 @@ Backup.prototype.backupDB = function backupDB() {
       var FILENAME_DATE = self.cleanUpDate();
       var fileName = `${filePath}${FILENAME_DATE}.json`;
       
-      childProcess.execFile('curl', ['-o', fileName, URL], function result(error, out, err) {
+      childProcess.execFile('curl', ['-o', fileName, URL], function result(error, out) {
         if (error) {
           downloadPromise.reject();
         } else {
@@ -292,7 +292,6 @@ Backup.prototype.decompress = function decompress(filePath) {
   var inp2 = fs.createReadStream(filePath);
   var outputPath = filePath.split('.gz')[0];
   var out2 = fs.createWriteStream(outputPath, {false:'w'});
-  var inflater = inp2.pipe(zlib.createGunzip()).pipe(out2); /* Uncompress the .gz file */
   var deflatedFilePath = filePath.replace(/\.gz/, '');
   var buffer = [];
   var gunzip = zlib.createGunzip();
