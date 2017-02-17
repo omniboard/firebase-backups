@@ -300,18 +300,19 @@ Backup.prototype.decompress = function decompress(filePath) {
   inp2.pipe(gunzip);
   gunzip.on('data', function(data) {
     buffer.push(data.toString());
-  }).on("end", function() {
-    fs.writeFile(deflatedFilePath, buffer.join(""), function(err) {
+  }).on('end', function gunzipEnd() {
+    fs.writeFile(deflatedFilePath, buffer.join(''), function gunzipWriteError(err) {
       if (err) {
         return logger.info(err);
       }
       logger.info('The file was saved locally');
       decompressPromise.resolve(deflatedFilePath);
-    }); 
-  }).on("error", function(e) {
-    logger.info( e );
-    decompressPromise.reject( e );
-  })    
+      return;
+    });
+  }).on('error', function gunzipError(e) {
+    logger.info(e);
+    decompressPromise.reject(e);
+  })
   
   return decompressPromise.promise;
 };
