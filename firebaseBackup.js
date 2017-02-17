@@ -32,7 +32,7 @@ Backup.prototype.startBackup = function startBackup() {
     self.removeFile(filePath);
   }, function backupRejected(filePath) {
     self.removeFile(filePath);
-  }).catch(function(e) {
+  }).catch(function catchError(e) {
     throw e;
   });
 };
@@ -97,7 +97,7 @@ Backup.prototype.listBackups = function listBackups() {
         }
       }
     }
-  ).catch(function(e) {
+  ).catch(function catchError(e) {
     throw e;
   });
 };
@@ -158,16 +158,16 @@ Backup.prototype.backupDB = function backupDB() {
               }, function saveS3Error(err) {
                 throw new Error `Unable to save ${err.message}`;
               }
-            ).catch(function(e) {
+            ).catch(function catchError(e) {
               throw e;
             });
-          }).catch(function(e) {
+          }).catch(function catchError(e) {
             throw e;
           });
         }
       });
     }
-  ).catch(function(e) {
+  ).catch(function catchError(e) {
     throw e;
   });
   return downloadPromise.promise;
@@ -183,7 +183,7 @@ Backup.prototype.saveS3 = function saveS3(path, filename) {
         }, function uploadError(error) {
           savePromise.reject(error);
         }
-      ).catch(function(e) {
+      ).catch(function catchError(e) {
         throw e;
       });
     }, 5000); 
@@ -215,7 +215,7 @@ Backup.prototype.restoreDB = function restoreDB() {
       },5000);
       
     }
-  ).catch(function(e) {
+  ).catch(function catchError(e) {
     throw e;
   });
 };
@@ -264,15 +264,15 @@ Backup.prototype.restoreDBfromS3 = function restoreDBfromS3() {
             }, function(error) {
               logger.info('error ', error );
             }
-          ).catch(function(e) {
+          ).catch(function catchError(e) {
             throw e;
           });
         }
-      ).catch(function(e) {
+      ).catch(function catchError(e) {
         throw e;
       });
     }
-  ).catch(function(e) {
+  ).catch(function catchError(e) {
     throw e;
   });
 };
